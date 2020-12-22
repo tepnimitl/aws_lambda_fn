@@ -2,7 +2,9 @@ import json
 import boto3
 
 client = boto3.client('events')
-rule_name = 'StartStop-Scheduler-SchedulerRule-4RHFF08EZN85'
+sns = boto3.client('sns')
+rule_name = 'StartStop-Scheduler-SchedulerRule-xxx'
+sns_arn = 'arn:aws:sns:us-east-1:xxx:event-scheduler-status'
 
 def lambda_handler(event, context):
     # TODO implement
@@ -16,6 +18,12 @@ def lambda_handler(event, context):
         
     status = status['State']
     print(rule_name +str(" : ") +str(status))
+    
+    response = sns.publish(
+        TargetArn = sns_arn,
+        Subject = 'xxx Scheduler Status',
+        Message = 'xxx Scheduler Status : ' + status
+    )
     
     return {
         'statusCode': 200,
