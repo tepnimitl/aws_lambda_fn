@@ -1,0 +1,45 @@
+# Check instances status function
+
+import json
+import boto3
+
+
+ec2 = boto3.client('ec2')
+sns = boto3.client('sns')
+
+instances = ['aaa','bbb','ccc']
+arn = [
+    'arn:aws:sns:us-east-1:AAA:Hosting_Team_Email',
+    'arn:aws:sns:us-east-1:AAA:Hosting_Team_Text',
+    'arn:aws:sns:us-east-1:AAA:Application_Team_Email',
+    'arn:aws:sns:us-east-1:AAA:Application_Team_Text'
+    ]
+
+def lambda_handler(event, context):
+    # TODO implement
+    
+    status = ec2.describe_instance_status(
+        InstanceIds = instances,
+        IncludeAllInstances = True
+    )
+    
+    for i in range(len(instances)):
+        state = status['InstanceStatuses'][i]['InstanceState']['Name']
+        if state != 'running':
+            notification = "BBB server is unavailable, Please check\n\nInstanceID:     " + str(instances[i]) + "\nEnvironment: BBB\nState:              " + state
+            subject = '[CCC-PR] Availability Alert on BBB servers in DDD environment'
+            for j in range(len(arn)):    
+                response = sns.publish(
+                    TargetArn = arn[j],
+                    Message = json.dumps({'default': notification}),
+                    Subject = subject,
+                    MessageStructure = 'json'
+                )
+    return {
+        'statusCode': 200,
+        'body': json.dumps(status)
+    }
+
+    
+    
+
